@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package kstor;
+
+service Kstor {
+  rpc KstorCommand (KstorRequest) returns (KstorReply) {}
+}
+
+message KstorRequest {
+  string Cmd = 1;
+  string Key = 2;
+  string Value = 3;
+  string Bucketname = 4;
+  string Path = 5;
+}
+
+message KstorReply {
+  string info = 1;
+}
