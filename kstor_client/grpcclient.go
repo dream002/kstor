@@ -12,17 +12,17 @@ import (
 func BuckupDB(c pb.KstorClient, databasepath string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.KstorCommand(ctx, &pb.KstorRequest{Cmd: "buckupdatabase", Path: databasepath})
+	r, err := c.KstorCommand(ctx, &pb.KstorRequest{Cmd: "backupdatabase", Path: databasepath})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.Info)
 }
 
-func RestorDB(c pb.KstorClient, databasepath string) {
+func RestorDB(c pb.KstorClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.KstorCommand(ctx, &pb.KstorRequest{Cmd: "restordatabase", Path: databasepath})
+	r, err := c.KstorCommand(ctx, &pb.KstorRequest{Cmd: "restordatabase"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}

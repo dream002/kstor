@@ -39,11 +39,11 @@ func Command(c pb.KstorClient) {
 		Use:   "restor",
 		Short: "restor the database",
 		Run: func(cmd *cobra.Command, args []string) {
-			kc.RestorDB(c, databasepath)
+			kc.RestorDB(c)
 		},
 	}
-	cmdRestor.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
-	cmdRestor.MarkFlagRequired("path")
+	//cmdRestor.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
+	//cmdRestor.MarkFlagRequired("path")
 
 	var cmdCreate = &cobra.Command{
 		Use:   "create",

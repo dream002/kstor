@@ -8,12 +8,19 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+const (
+	Databasename = "my.db"
+	Defaultpath  = "../kstor_db/" + Databasename
+)
+
 var db *bolt.DB
+var backuppath string
+var backuped bool = false
 
 func init() {
 	// Open the my.db data file in your current directory.
 	// It will be created if it doesn't exist.
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,7 +28,7 @@ func init() {
 }
 
 func CreateBucket(bucketname string) error {
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +54,7 @@ func CreateBucket(bucketname string) error {
 }
 
 func DeleteBucket(bucketname string) error {
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +81,7 @@ func DeleteBucket(bucketname string) error {
 
 func SetKeyValue(key string, value string, name string) error {
 
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +111,7 @@ func SetKeyValue(key string, value string, name string) error {
 
 func GetKeyValue(key string, name string) (string, error) {
 
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -130,7 +137,7 @@ func GetKeyValue(key string, name string) (string, error) {
 func GetKeyValueWithP(key string, name string) (string, error) {
 	var str string
 
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,7 +166,7 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 
 func DeleteKeyValue(key string, name string) error {
 
-	db, err := bolt.Open("../kstor_db/my.db", 0600, nil)
+	db, err := bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,5 +191,51 @@ func DeleteKeyValue(key string, name string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+	return nil
+}
+
+func BackupDatabase(path string) error {
+	backuppath = path + Databasename
+	db, err := bolt.Open(Defaultpath, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	tx, err := db.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := tx.CopyFile(backuppath, 0600); err != nil {
+		return err
+	}
+	backuped = true
+	return nil
+}
+
+func RestorDatabase() error {
+	if backuped == false {
+		return errors.New("the backup database is not exist")
+	}
+
+	db, err := bolt.Open(backuppath, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+		return errors.New("the backup database is not exist")
+	}
+	defer db.Close()
+
+	tx, err := db.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := tx.CopyFile(Defaultpath, 0600); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -59,10 +59,18 @@ func (s *server) KstorCommand(ctx context.Context, in *pb.KstorRequest) (*pb.Kst
 		} else {
 			return &pb.KstorReply{Info: "delete key/value sucess"}, nil
 		}
-	case "buckupdatabase":
-		fmt.Println("buckupdatabase")
+	case "backupdatabase":
+		if err := bt.BackupDatabase(in.Path); err != nil {
+			return &pb.KstorReply{Info: "backup database fail"}, err
+		} else {
+			return &pb.KstorReply{Info: "backup database sucess"}, nil
+		}
 	case "restordatabase":
-		fmt.Println("restordatabase")
+		if err := bt.RestorDatabase(); err != nil {
+			return &pb.KstorReply{Info: "restor database fail"}, err
+		} else {
+			return &pb.KstorReply{Info: "restor database sucess"}, nil
+		}
 	default:
 		fmt.Println("error")
 	}
