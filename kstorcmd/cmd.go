@@ -1,20 +1,19 @@
 package kstorcmd
 
 import (
-	"fmt"
-	"strings"
+	pb "kstor/kstor"
+	kc "kstor/kstor_client"
 
 	"github.com/spf13/cobra"
 )
 
-func Command() {
+func Command(c pb.KstorClient) {
 
-	var echoTimes int
 	var bucketname string
 	var databasepath string
 	var thekey string
 	var thevalue string
-	var prefix string
+	var prefix *int
 
 	var cmdBucket = &cobra.Command{
 		Use:   "bucket",
@@ -30,9 +29,7 @@ func Command() {
 		Use:   "backup",
 		Short: "backup the database",
 		Run: func(cmd *cobra.Command, args []string) {
-			for i := 0; i < echoTimes; i++ {
-				fmt.Println("Echo: " + strings.Join(args, " "))
-			}
+			kc.BuckupDB(c, databasepath)
 		},
 	}
 	cmdBackup.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
@@ -42,9 +39,7 @@ func Command() {
 		Use:   "restor",
 		Short: "restor the database",
 		Run: func(cmd *cobra.Command, args []string) {
-			for i := 0; i < echoTimes; i++ {
-				fmt.Println("Echo: " + strings.Join(args, " "))
-			}
+			kc.RestorDB(c, databasepath)
 		},
 	}
 	cmdRestor.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
@@ -54,8 +49,7 @@ func Command() {
 		Use:   "create",
 		Short: "create a bucket space",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(len(args))
-			fmt.Println("Echo: " + strings.Join(args, " ") + bucketname)
+			kc.CreateBucket(c, bucketname)
 		},
 	}
 	cmdCreate.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
@@ -65,9 +59,7 @@ func Command() {
 		Use:   "delete",
 		Short: "delete the bucket space",
 		Run: func(cmd *cobra.Command, args []string) {
-			for i := 0; i < echoTimes; i++ {
-				fmt.Println("Echo: " + strings.Join(args, " "))
-			}
+			kc.DeleteBucket(c, bucketname)
 		},
 	}
 	cmdDeletebk.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
@@ -77,10 +69,7 @@ func Command() {
 		Use:   "set",
 		Short: "add a key/value pair",
 		Run: func(cmd *cobra.Command, args []string) {
-			//for i := 0; i < echoTimes; i++ {
-			fmt.Println(len(args))
-			fmt.Println("Echo: " + strings.Join(args, " "))
-			//}
+			kc.SetKV(c, thekey, thevalue, bucketname)
 		},
 	}
 	cmdSet.Flags().StringVarP(&thekey, "key", "k", "", "your key")
@@ -94,25 +83,25 @@ func Command() {
 		Use:   "get",
 		Short: "get the key pair",
 		Run: func(cmd *cobra.Command, args []string) {
-			//for i := 0; i < echoTimes; i++ {
-			fmt.Println("Echo: " + strings.Join(args, " "))
-			//}
+			if *prefix == 1 {
+				kc.GetKVwithP(c, thekey, bucketname)
+			} else {
+				kc.GetKV(c, thekey, bucketname)
+			}
 		},
 	}
 	cmdGet.Flags().StringVarP(&thekey, "key", "k", "", "your key")
 	cmdGet.MarkFlagRequired("key")
 	cmdGet.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
 	cmdGet.MarkFlagRequired("name")
-	cmdGet.Flags().StringVarP(&prefix, "prefix", "", "", "get key%")
+	//cmdGet.Flags().StringVarP(&prefix, "prefix", "", "a", "get key%")
+	prefix = cmdGet.Flags().Count("prefix", "get key%")
 
 	var cmdDeletekv = &cobra.Command{
 		Use:   "delete",
 		Short: "delete the key pair",
-		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			for i := 0; i < echoTimes; i++ {
-				fmt.Println("Echo: " + strings.Join(args, " "))
-			}
+			kc.DeleteKV(c, thekey, bucketname)
 		},
 	}
 	cmdDeletekv.Flags().StringVarP(&thekey, "key", "k", "", "your key")
@@ -124,6 +113,7 @@ func Command() {
 	rootCmd.AddCommand(cmdBucket, cmdKey, cmdBackup, cmdRestor)
 	cmdBucket.AddCommand(cmdCreate, cmdDeletebk)
 	cmdKey.AddCommand(cmdSet, cmdGet, cmdDeletekv)
+
 	rootCmd.Execute()
 
 }
