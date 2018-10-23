@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	backuppath = "C:/mycode/goprojects/src/kstor/kstor_backup/"
+)
+
 func Command(c pb.KstorClient) {
 
 	var bucketname string
@@ -32,8 +36,8 @@ func Command(c pb.KstorClient) {
 			kc.BuckupDB(c, databasepath)
 		},
 	}
-	cmdBackup.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
-	cmdBackup.MarkFlagRequired("path")
+	cmdBackup.Flags().StringVarP(&databasepath, "path", "p", backuppath, "the backup path")
+	//cmdBackup.MarkFlagRequired("path")
 
 	var cmdRestor = &cobra.Command{
 		Use:   "restor",
