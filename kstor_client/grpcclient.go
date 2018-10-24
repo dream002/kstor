@@ -15,7 +15,7 @@ func BuckupDB(c pb.KstorClient, databasepath string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func buckupdb(c pb.KstorClient, databasepath string) (*pb.KstorReply, error) {
@@ -35,7 +35,7 @@ func RestorDB(c pb.KstorClient) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func restordb(c pb.KstorClient) (*pb.KstorReply, error) {
@@ -53,7 +53,7 @@ func DeleteBucket(c pb.KstorClient, bucketname string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func deletebucket(c pb.KstorClient, bucketname string) (*pb.KstorReply, error) {
@@ -71,7 +71,7 @@ func SetKV(c pb.KstorClient, thekey string, thevalue string, bucketname string) 
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func setkv(c pb.KstorClient, thekey string, thevalue string, bucketname string) (*pb.KstorReply, error) {
@@ -89,7 +89,7 @@ func GetKV(c pb.KstorClient, thekey string, bucketname string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func getkv(c pb.KstorClient, thekey string, bucketname string) (*pb.KstorReply, error) {
@@ -108,7 +108,7 @@ func GetKVwithP(c pb.KstorClient, thekey string, bucketname string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func getkvwithp(c pb.KstorClient, thekey string, bucketname string) (*pb.KstorReply, error) {
@@ -127,7 +127,7 @@ func DeleteKV(c pb.KstorClient, thekey string, bucketname string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func deletekv(c pb.KstorClient, thekey string, bucketname string) (*pb.KstorReply, error) {
@@ -146,7 +146,7 @@ func CreateBucket(c pb.KstorClient, name string) {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Info)
+	log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
 }
 
 func createbucket(c pb.KstorClient, name string) (*pb.KstorReply, error) {

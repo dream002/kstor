@@ -6,6 +6,13 @@ service Kstor {
   rpc KstorCommand (KstorRequest) returns (KstorReply) {}
 }
 
+message Status {
+    int32 code =1;
+    string  message  = 2;
+    string  messageCn  = 3;
+    repeated string stack = 4;
+}
+
 message KstorRequest {
   string Cmd = 1;
   string Key = 2;
@@ -15,5 +22,6 @@ message KstorRequest {
 }
 
 message KstorReply {
-  string info = 1;
+  Status Status = 1;
+  string info = 2;
 }
