@@ -19,6 +19,7 @@ func Command(c pb.KstorClient) {
 	var thevalue string
 	var prefix *int
 
+	//use：命令名，short：命令短说明，run：命令对应操作
 	var cmdBucket = &cobra.Command{
 		Use:   "bucket",
 		Short: "operate the bucket",
@@ -36,6 +37,7 @@ func Command(c pb.KstorClient) {
 			kc.BuckupDB(c, databasepath)
 		},
 	}
+	//添加命令参数
 	cmdBackup.Flags().StringVarP(&databasepath, "path", "p", backuppath, "the backup path")
 	//cmdBackup.MarkFlagRequired("path")
 
@@ -56,7 +58,9 @@ func Command(c pb.KstorClient) {
 			kc.CreateBucket(c, bucketname)
 		},
 	}
+	//添加命令参数
 	cmdCreate.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
+	//该参数不允许省略
 	cmdCreate.MarkFlagRequired("name")
 
 	var cmdDeletebk = &cobra.Command{
@@ -113,6 +117,7 @@ func Command(c pb.KstorClient) {
 	cmdDeletekv.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
 	cmdDeletekv.MarkFlagRequired("name")
 
+	//addcommand添加子命令
 	var rootCmd = &cobra.Command{Use: "kstor"}
 	rootCmd.AddCommand(cmdBucket, cmdKey, cmdBackup, cmdRestor)
 	cmdBucket.AddCommand(cmdCreate, cmdDeletebk)
