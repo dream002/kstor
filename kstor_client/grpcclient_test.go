@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	pb "kstor/kstor"
+	pb "kstor/kstor_pb"
 	//cmd "kstor/kstorcmd"
 	"strconv"
 
@@ -51,7 +51,7 @@ func Test_setkv(t *testing.T) {
 
 }
 
-func Test_deletekv(t *testing.T) {
+/*func Test_deletekv(t *testing.T) {
 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -68,4 +68,4 @@ func Test_deletekv(t *testing.T) {
 			t.Error("error")
 		}
 	}
-}
+}*/

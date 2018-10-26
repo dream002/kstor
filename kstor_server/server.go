@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
 
-	pb "kstor/kstor"
 	bt "kstor/kstor_db"
+	pb "kstor/kstor_pb"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -16,6 +18,11 @@ import (
 const (
 	port = ":50051"
 )
+
+var testpath string = "/home/zhangjiahua/codes/src/kstor/kstor_db/mybackup.db"
+var defaultpath string = "/home/zhangjiahua/codes/src/kstor/kstor_db/my.db"
+
+//var testpath string = "../kstor_db/my.db"
 
 var (
 	createbucketfail = &pb.Status{
@@ -119,6 +126,7 @@ func (s *server) KstorCommand(ctx context.Context, in *pb.KstorRequest) (*pb.Kst
 		}
 	//备份DB
 	case "backupdatabase":
+
 		if err := bt.BackupDatabase(in.Path); err != nil {
 			return &pb.KstorReply{Status: backupdatabasefail, Info: "backup database fail"}, err
 		} else {
@@ -135,6 +143,79 @@ func (s *server) KstorCommand(ctx context.Context, in *pb.KstorRequest) (*pb.Kst
 		fmt.Println("error")
 	}
 	return &pb.KstorReply{Info: "get the message"}, nil
+}
+
+func (s *server) KstorBackup(req *pb.BackupRequest, stream pb.Kstor_KstorBackupServer) error {
+
+	//copy source file
+	bt.BackupDatabase(testpath)
+
+	size := req.Size
+	buffer := make([]byte, size)
+
+	f, err := os.Open(testpath)
+	defer f.Close()
+	if err != nil {
+		log.Fatalf("open file fail: %v", err)
+		return err
+	}
+
+	for {
+
+		n, err := f.Read(buffer)
+		if err != nil && err != io.EOF {
+			log.Fatal("read file error")
+			return err
+		}
+
+		resp := &pb.BackupReply{BackupFile: buffer[:n]}
+
+		err = stream.Send(resp)
+		if err != nil {
+			log.Fatal("send buffer error")
+			return err
+		}
+
+		if n < int(size) {
+			break
+		}
+	}
+
+	//move source file
+	os.Remove(testpath)
+	return nil
+}
+
+func (s *server) KstorRestor(stream pb.Kstor_KstorRestorServer) error {
+
+	f, err := os.Create(defaultpath)
+	defer f.Close()
+	if err != nil {
+		log.Fatal("create file fail")
+		return err
+	}
+
+	for {
+
+		rsq, err := stream.Recv()
+		if err != nil {
+			return err
+		}
+
+		_, err = f.Write(rsq.RestorFile)
+		if err != nil {
+			return err
+		}
+
+		if len(rsq.RestorFile) < 1024 {
+			break
+		}
+
+		//buffer = rsq.RestorFile
+
+	}
+
+	return nil
 }
 
 func main() {

@@ -12,22 +12,26 @@ import (
 
 const (
 	Databasename = "my.db"
-	Defaultpath  = "../kstor_db/" + Databasename
+	//Defaultpath  = "/home/zhangjiahua/codes/src/kstor/kstor_db/my.db"
+	Defaultpath = "../kstor_db/my.db"
 )
+
+var DB *bolt.DB
+var err error
 
 //var backuped bool = false
 
 func init() {
 	// Open the my.db data file in your current directory.
 	// It will be created if it doesn't exist.
-	db, err := bolt.Open(Defaultpath, 0600, nil)
+	DB, err = bolt.Open(Defaultpath, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	//defer db.Close()
 
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		panic("init() db begin fail")
 	}
@@ -48,15 +52,8 @@ func init() {
 
 func CreateBucket(bucketname string) error {
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -77,15 +74,8 @@ func CreateBucket(bucketname string) error {
 
 func DeleteBucket(bucketname string) error {
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -106,15 +96,8 @@ func DeleteBucket(bucketname string) error {
 
 func SetKeyValue(key string, value string, name string) error {
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -141,15 +124,8 @@ func SetKeyValue(key string, value string, name string) error {
 
 func GetKeyValue(key string, name string) (string, error) {
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return "", err
 	}
@@ -172,15 +148,8 @@ func GetKeyValue(key string, name string) (string, error) {
 func GetKeyValueWithP(key string, name string) (string, error) {
 	var str string
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return "", err
 	}
@@ -205,15 +174,8 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 
 func DeleteKeyValue(key string, name string) error {
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -241,37 +203,18 @@ func DeleteKeyValue(key string, name string) error {
 func BackupDatabase(path string) error {
 
 	//设置备份路径
-	backuppath := path + Databasename
+	//backuppath := path + Databasename
 	//fmt.Println(backuppath)
 
-	//打开当前DB
-	db, err := bolt.Open(Defaultpath, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	//创建DB事务
-	tx, err := db.Begin(true)
+	tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	//将路径保存到backupbacket
-	b := tx.Bucket([]byte("backupbucket"))
-	if b == nil {
-		return errors.New("the backupbucket does not exist")
-	}
-
-	//将key/value对加入bucket
-	err = b.Put([]byte("path"), []byte(backuppath))
-	if err != nil {
-		return err
-	}
-
 	//备份
-	if err := tx.CopyFile(backuppath, 0600); err != nil {
+	if err := tx.CopyFile(path, 0600); err != nil {
 		return err
 	}
 

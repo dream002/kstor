@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package kstor;
+
+service Kstor {
+  rpc KstorCommand (KstorRequest) returns (KstorReply) {}
+  rpc KstorBackup (BackupRequest) returns (stream BackupReply) {}
+  rpc KstorRestor (stream RestorRequest) returns (RestorReply) {}
+}
+
+message Status {
+    int32 code =1;
+    string  message  = 2;
+    string  messageCn  = 3;
+    repeated string stack = 4;
+}
+
+message KstorRequest {
+  string Cmd = 1;
+  string Key = 2;
+  string Value = 3;
+  string Bucketname = 4;
+  string Path = 5;
+}
+
+message KstorReply {
+  Status Status = 1;
+  string info = 2;
+}
+
+message BackupRequest {
+  int32 Size = 1;
+}
+
+message BackupReply {
+  bytes BackupFile = 1;
+}
+
+message RestorRequest {
+  bytes RestorFile = 1;
+}
+
+message RestorReply {
+  Status Status = 1;
+  string info = 2;
+}

@@ -1,14 +1,15 @@
 package kstorcmd
 
 import (
-	pb "kstor/kstor"
 	kc "kstor/kstor_client"
+	pb "kstor/kstor_pb"
 
 	"github.com/spf13/cobra"
 )
 
 const (
-	backuppath = "C:/mycode/goprojects/src/kstor/kstor_backup/"
+	backuppath = "/home/zhangjiahua/codes/src/kstor/kstor_backup/"
+	//backuppath = "/kstor_backup/"
 )
 
 func Command(c pb.KstorClient) {
