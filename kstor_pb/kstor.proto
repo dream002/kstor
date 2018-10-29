@@ -32,8 +32,9 @@ message BackupRequest {
   int32 Size = 1;
 }
 
-message BackupReply {
+message BackupReply {  
   bytes BackupFile = 1;
+  Status Status = 2;
 }
 
 message RestorRequest {

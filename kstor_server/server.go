@@ -163,8 +163,9 @@ func (s *server) KstorBackup(req *pb.BackupRequest, stream pb.Kstor_KstorBackupS
 	for {
 
 		n, err := f.Read(buffer)
-		if err != nil && err != io.EOF {
-			log.Fatal("read file error")
+		if err == io.EOF {
+			break
+		} else if err != nil {
 			return err
 		}
 
@@ -198,7 +199,10 @@ func (s *server) KstorRestor(stream pb.Kstor_KstorRestorServer) error {
 	for {
 
 		rsq, err := stream.Recv()
-		if err != nil {
+		if err == io.EOF {
+			//stream.SendAndClose(&pb.RestorReply{Status: restordatabasesucess, Info: "restor database sucess"})
+			break
+		} else if err != nil {
 			return err
 		}
 
@@ -207,11 +211,10 @@ func (s *server) KstorRestor(stream pb.Kstor_KstorRestorServer) error {
 			return err
 		}
 
-		if len(rsq.RestorFile) < 1024 {
+		if len(rsq.RestorFile) < 1024*1024 {
+			stream.SendAndClose(&pb.RestorReply{Status: restordatabasesucess, Info: "restor database sucess"})
 			break
 		}
-
-		//buffer = rsq.RestorFile
 
 	}
 

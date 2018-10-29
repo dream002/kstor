@@ -1,7 +1,7 @@
 package client
 
 import (
-	"fmt"
+	//"fmt"
 	"io"
 	"log"
 	"os"
@@ -167,47 +167,49 @@ func createbucket(c pb.KstorClient, name string) (*pb.KstorReply, error) {
 
 func RestorDB(c pb.KstorClient) {
 
-	err := putfile(c)
+	reply, err := putfile(c)
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Printf("StatusCode: %d, Info: %s", reply.Status.Code, reply.Info)
 	} else {
-		fmt.Println("restor sucess")
+		log.Printf("StatusCode: %d, Info: %s", reply.Status.Code, reply.Info)
 	}
-	//log.Printf("StatusCode: %d, Info: %s", r.Status.Code, r.Info)
+
 }
 
-func putfile(client pb.KstorClient) error {
+func putfile(client pb.KstorClient) (pb.RestorReply, error) {
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 1024*1024)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	stream, err := client.KstorRestor(ctx)
 	if err != nil {
-		return err
+		return pb.RestorReply{}, err
 	}
 
 	f, err := os.Open(backuppath)
 	defer f.Close()
 	if err != nil {
-		return err
+		return pb.RestorReply{}, err
 	}
 
 	for {
 		n, err := f.Read(buffer)
-		if err != nil && err != io.EOF {
-			return err
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return pb.RestorReply{}, err
 		}
-		//fmt.Println(n, err, len(buffer))
+
 		req := &pb.RestorRequest{RestorFile: buffer[:n]}
 
 		err = stream.Send(req)
 		if err != nil {
-			return err
+			return pb.RestorReply{}, err
 		}
 
-		if n < 1024 {
+		if n < 1024*1024 {
 			break
 		}
 	}
@@ -215,65 +217,64 @@ func putfile(client pb.KstorClient) error {
 	if err != nil && err != io.EOF {
 		log.Fatalf("%v.CloseAndRecv() got error %v, want %v", stream, err, nil)
 	}
-	log.Printf("Route summary: %v", reply)
-	return nil
+	//log.Printf("StatusCode: %d, Info: %s", reply.Status.Code, reply.Info)
+	return *reply, err
 }
 
 func BuckupDB(c pb.KstorClient, databasepath string) {
 
-	err := getfile(c, databasepath)
+	_, err := getfile(c, databasepath)
 	if err != nil {
+		//log.Printf("StatusCode: %d, Info: %s", resp.Status.Code, reply.Info)
 		log.Printf("StatusCode: 1300, Info: backup fail: %v", err)
 	} else {
+		//log.Printf("StatusCode: %d, Info: backup sucess", resp.Status.Code)
 		log.Printf("StatusCode: 1301, Info: backup sucess")
 	}
 
 }
 
-func getfile(client pb.KstorClient, path string) error {
+func getfile(client pb.KstorClient, path string) (*pb.BackupReply, error) {
 
 	backuppath = path + dbname
 
-	var size int32 = 1024
-	//buffer := make([]byte, size)
+	var size int32 = 1024 * 1024
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	stream, err := client.KstorBackup(ctx, &pb.BackupRequest{Size: size})
 	if err != nil {
-		return err
+		return &pb.BackupReply{}, err
 	}
 
 	f, err := os.Create(backuppath)
 	defer f.Close()
 	if err != nil {
-		return err
+		return &pb.BackupReply{}, err
 	}
 
 	for {
 
 		resp, err := stream.Recv()
 		if err != nil && err != io.EOF {
-			return err
+			return &pb.BackupReply{}, err
 		}
 
 		if err == io.EOF {
 			break
 		}
 
-		//fmt.Println(len(resp.BackupFile))
 		_, err = f.Write(resp.BackupFile)
 
 		if len(resp.BackupFile) < int(size) {
-			break
+			return resp, nil
 		}
 
 		if err != nil {
-			return err
+			return &pb.BackupReply{}, err
 		}
 
-		//log.Println(buffer)
 	}
-	return nil
+	return &pb.BackupReply{}, nil
 }

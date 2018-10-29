@@ -12,8 +12,8 @@ import (
 
 const (
 	Databasename = "my.db"
-	//Defaultpath  = "/home/zhangjiahua/codes/src/kstor/kstor_db/my.db"
-	Defaultpath = "../kstor_db/my.db"
+	Defaultpath  = "/home/zhangjiahua/codes/src/kstor/kstor_db/my.db"
+	//Defaultpath = "../kstor_db/my.db"
 )
 
 var DB *bolt.DB
@@ -31,7 +31,7 @@ func init() {
 	//defer db.Close()
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		panic("init() db begin fail")
 	}
@@ -46,14 +46,23 @@ func init() {
 	//提交当前修改
 	if err := tx.Commit(); err != nil {
 		panic("init() Commit fail")
-	}
+	}*/
+
+	DB.Update(func(tx *bolt.Tx) error {
+		//创建名为backupbucket的bucket用于存储备份路径
+		_, err = tx.CreateBucket([]byte("backupbucket"))
+		if err != nil {
+			fmt.Println("the backupbucket is exist")
+		}
+		return nil
+	})
 
 }
 
 func CreateBucket(bucketname string) error {
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -69,13 +78,22 @@ func CreateBucket(bucketname string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	return nil
+	return nil*/
+
+	err := DB.Update(func(tx *bolt.Tx) error {
+		_, err = tx.CreateBucket([]byte(bucketname))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func DeleteBucket(bucketname string) error {
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -91,13 +109,22 @@ func DeleteBucket(bucketname string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	return nil
+	return nil*/
+
+	err := DB.Update(func(tx *bolt.Tx) error {
+		err = tx.DeleteBucket([]byte(bucketname))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func SetKeyValue(key string, value string, name string) error {
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -119,13 +146,29 @@ func SetKeyValue(key string, value string, name string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	return nil
+	return nil*/
+
+	err := DB.Update(func(tx *bolt.Tx) error {
+		//根据name找到对应bucket
+		b := tx.Bucket([]byte(name))
+		if b == nil {
+			return errors.New("the bucket does not exist")
+		}
+
+		//将key/value对加入bucket
+		err = b.Put([]byte(key), []byte(value))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func GetKeyValue(key string, name string) (string, error) {
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return "", err
 	}
@@ -140,6 +183,24 @@ func GetKeyValue(key string, name string) (string, error) {
 	//获得key对应value
 	v := b.Get([]byte(key))
 	//log.Println("there is getkv")
+	return string(v), err*/
+
+	var v []byte
+
+	err := DB.View(func(tx *bolt.Tx) error {
+		//根据name找到对应bucket
+		b := tx.Bucket([]byte(name))
+		if b == nil {
+			return errors.New("the bucket does not exist")
+		}
+
+		//获得key对应value
+		v = b.Get([]byte(key))
+		if v == nil {
+			return errors.New("the key does not exist")
+		}
+		return nil
+	})
 	return string(v), err
 
 }
@@ -149,7 +210,7 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 	var str string
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return "", err
 	}
@@ -168,6 +229,23 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 		str = str + string(k) + "--" + string(v) + ", "
 	}
 	//log.Println("there is getkv with p")
+	return str, err*/
+
+	err := DB.View(func(tx *bolt.Tx) error {
+		//根据name找到对应bucket
+		b := tx.Bucket([]byte(name))
+		if b == nil {
+			return errors.New("the bucket does not exist")
+		}
+
+		//获得以key开头的kv组
+		c := b.Cursor()
+		prefix := []byte(key)
+		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
+			str = str + string(k) + "--" + string(v) + ", "
+		}
+		return nil
+	})
 	return str, err
 
 }
@@ -175,7 +253,7 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 func DeleteKeyValue(key string, name string) error {
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -197,7 +275,23 @@ func DeleteKeyValue(key string, name string) error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	return nil
+	return nil*/
+
+	err := DB.Update(func(tx *bolt.Tx) error {
+		//根据name找到对应bucket
+		b := tx.Bucket([]byte(name))
+		if b == nil {
+			return errors.New("the bucket does not exist")
+		}
+
+		//删除key/value
+		err = b.Delete([]byte(key))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func BackupDatabase(path string) error {
@@ -207,7 +301,7 @@ func BackupDatabase(path string) error {
 	//fmt.Println(backuppath)
 
 	//创建DB事务
-	tx, err := DB.Begin(true)
+	/*tx, err := DB.Begin(true)
 	if err != nil {
 		return err
 	}
@@ -223,7 +317,16 @@ func BackupDatabase(path string) error {
 		return err
 	}
 
-	return nil
+	return nil*/
+
+	err := DB.Update(func(tx *bolt.Tx) error {
+		//备份
+		if err := tx.CopyFile(path, 0600); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func RestorDatabase() error {

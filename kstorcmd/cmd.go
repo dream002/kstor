@@ -40,7 +40,6 @@ func Command(c pb.KstorClient) {
 	}
 	//添加命令参数
 	cmdBackup.Flags().StringVarP(&databasepath, "path", "p", backuppath, "the backup path")
-	//cmdBackup.MarkFlagRequired("path")
 
 	var cmdRestor = &cobra.Command{
 		Use:   "restor",
@@ -49,8 +48,6 @@ func Command(c pb.KstorClient) {
 			kc.RestorDB(c)
 		},
 	}
-	//cmdRestor.Flags().StringVarP(&databasepath, "path", "p", "", "the backup path")
-	//cmdRestor.MarkFlagRequired("path")
 
 	var cmdCreate = &cobra.Command{
 		Use:   "create",
@@ -103,7 +100,6 @@ func Command(c pb.KstorClient) {
 	cmdGet.MarkFlagRequired("key")
 	cmdGet.Flags().StringVarP(&bucketname, "name", "n", "", "the bucket name")
 	cmdGet.MarkFlagRequired("name")
-	//cmdGet.Flags().StringVarP(&prefix, "prefix", "", "a", "get key%")
 	prefix = cmdGet.Flags().Count("prefix", "get key%")
 
 	var cmdDeletekv = &cobra.Command{
