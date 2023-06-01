@@ -4,8 +4,8 @@ package main
 import (
 	"log"
 
-	pb "kstor/kstor_pb"
-	cmd "kstor/kstorcmd"
+	pb "github.com/dream002/kstor/kstor_pb"
+	cmd "github.com/dream002/kstor/kstorcmd"
 
 	"google.golang.org/grpc"
 )

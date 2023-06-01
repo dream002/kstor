@@ -60,95 +60,27 @@ func init() {
 }
 
 func CreateBucket(bucketname string) error {
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	//创建名为bucketname的bucket
-	_, err = tx.CreateBucket([]byte(bucketname))
-	if err != nil {
-		return err
-	}
-
-	//提交当前修改
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil*/
-
-	err := DB.Update(func(tx *bolt.Tx) error {
+	return DB.Update(func(tx *bolt.Tx) error {
 		_, err = tx.CreateBucket([]byte(bucketname))
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return err
 }
 
 func DeleteBucket(bucketname string) error {
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	//删除名为bucketname的bucket
-	err = tx.DeleteBucket([]byte(bucketname))
-	if err != nil {
-		return err
-	}
-
-	//提交当前修改
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil*/
-
-	err := DB.Update(func(tx *bolt.Tx) error {
+	return DB.Update(func(tx *bolt.Tx) error {
 		err = tx.DeleteBucket([]byte(bucketname))
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return err
 }
 
 func SetKeyValue(key string, value string, name string) error {
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	//根据name找到对应bucket
-	b := tx.Bucket([]byte(name))
-	if b == nil {
-		return errors.New("the bucket does not exist")
-	}
-
-	//将key/value对加入bucket
-	err = b.Put([]byte(key), []byte(value))
-	if err != nil {
-		return err
-	}
-
-	//提交当前修改
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil*/
-
-	err := DB.Update(func(tx *bolt.Tx) error {
+	return DB.Update(func(tx *bolt.Tx) error {
 		//根据name找到对应bucket
 		b := tx.Bucket([]byte(name))
 		if b == nil {
@@ -162,29 +94,9 @@ func SetKeyValue(key string, value string, name string) error {
 		}
 		return nil
 	})
-	return err
 }
 
 func GetKeyValue(key string, name string) (string, error) {
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	//根据name找到对应bucket
-	b := tx.Bucket([]byte(name))
-	if b == nil {
-		return "", errors.New("the bucket does not exist")
-	}
-
-	//获得key对应value
-	v := b.Get([]byte(key))
-	//log.Println("there is getkv")
-	return string(v), err*/
-
 	var v []byte
 
 	err := DB.View(func(tx *bolt.Tx) error {
@@ -205,31 +117,9 @@ func GetKeyValue(key string, name string) (string, error) {
 
 }
 
-//获得以key开头的kv组
+// 获得以key开头的kv组
 func GetKeyValueWithP(key string, name string) (string, error) {
 	var str string
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	//根据name找到对应bucket
-	b := tx.Bucket([]byte(name))
-	if b == nil {
-		return "", errors.New("the bucket does not exist")
-	}
-
-	//获得以key开头的kv组
-	c := b.Cursor()
-	prefix := []byte(key)
-	for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
-		str = str + string(k) + "--" + string(v) + ", "
-	}
-	//log.Println("there is getkv with p")
-	return str, err*/
 
 	err := DB.View(func(tx *bolt.Tx) error {
 		//根据name找到对应bucket
@@ -247,37 +137,10 @@ func GetKeyValueWithP(key string, name string) (string, error) {
 		return nil
 	})
 	return str, err
-
 }
 
 func DeleteKeyValue(key string, name string) error {
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	//根据name找到对应bucket
-	b := tx.Bucket([]byte(name))
-	if b == nil {
-		return errors.New("the bucket does not exist")
-	}
-
-	//删除key/value
-	err = b.Delete([]byte(key))
-	if err != nil {
-		return err
-	}
-
-	//提交当前修改
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil*/
-
-	err := DB.Update(func(tx *bolt.Tx) error {
+	return DB.Update(func(tx *bolt.Tx) error {
 		//根据name找到对应bucket
 		b := tx.Bucket([]byte(name))
 		if b == nil {
@@ -291,46 +154,19 @@ func DeleteKeyValue(key string, name string) error {
 		}
 		return nil
 	})
-	return err
 }
 
 func BackupDatabase(path string) error {
-
-	//设置备份路径
-	//backuppath := path + Databasename
-	//fmt.Println(backuppath)
-
-	//创建DB事务
-	/*tx, err := DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	//备份
-	if err := tx.CopyFile(path, 0600); err != nil {
-		return err
-	}
-
-	//提交当前修改
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil*/
-
-	err := DB.Update(func(tx *bolt.Tx) error {
+	return DB.Update(func(tx *bolt.Tx) error {
 		//备份
 		if err := tx.CopyFile(path, 0600); err != nil {
 			return err
 		}
 		return nil
 	})
-	return err
 }
 
 func RestorDatabase() error {
-
 	//从backupbucket获取备份路径
 	backuppath, err := GetKeyValue("path", "backupbucket")
 	if backuppath == "" || err != nil {

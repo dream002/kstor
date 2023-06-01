@@ -7,8 +7,8 @@ import (
 	"net"
 	"os"
 
-	bt "kstor/kstor_db"
-	pb "kstor/kstor_pb"
+	bt "github.com/dream002/kstor/kstor_db"
+	pb "github.com/dream002/kstor/kstor_pb"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -78,7 +78,7 @@ var (
 // server is used to implement helloworld.GreeterServer.
 type server struct{}
 
-//服务端根据请求返回对应的响应
+// 服务端根据请求返回对应的响应
 func (s *server) KstorCommand(ctx context.Context, in *pb.KstorRequest) (*pb.KstorReply, error) {
 
 	switch in.Cmd {

@@ -1,8 +1,8 @@
 package kstorcmd
 
 import (
-	kc "kstor/kstor_client"
-	pb "kstor/kstor_pb"
+	kc "github.com/dream002/kstor/kstor_client"
+	pb "github.com/dream002/kstor/kstor_pb"
 
 	"github.com/spf13/cobra"
 )

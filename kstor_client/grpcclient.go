@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	pb "kstor/kstor_pb"
+	pb "github.com/dream002/kstor/kstor_pb"
 
 	"golang.org/x/net/context"
 )
